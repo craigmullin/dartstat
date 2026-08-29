@@ -13,6 +13,8 @@ Last reviewed: 2026-08-29
 - Firestore `(default)` is live in `nam5`; checked-in rules default to private,
   per-user access and have not been deployed.
 - Google provider enablement remains to be completed in Firebase Authentication.
+- The supplied DartStat artwork is wired as the favicon, Apple touch icon, and
+  installable web-app icon set.
 - No deployment has been performed.
 
 ## Verification
