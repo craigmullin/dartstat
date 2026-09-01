@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { onAuthStateChanged, signOut, type User } from "firebase/auth";
 import { finishGoogleRedirect, signInWithGoogle } from "./auth";
 import { CRICKET_TARGETS, createDart, formatMpr, marksPerRound, targetTotal, totalMarks, type CricketDart } from "./cricket";
@@ -7,10 +7,13 @@ import { addDartSet, archiveDartSet, loadDartSets, loadSessions, saveSession, up
 import { auth } from "./firebase";
 import { THEMES, readStoredTheme, storeTheme, type ThemeId } from "./themes";
 import { aggregateStatsByDartSet, snapshotDartSet, tipTypeLabel, validateDartSet, type DartSet, type DartSetValues } from "./dartSets";
+import { CompetitiveCricket } from "./CompetitiveCricketView";
+import { competitiveCricketStorageKey } from "./competitiveCricket";
 
 type Page = "practice" | "darts" | "history" | "stats" | "settings";
-type PracticeView = "home" | "setup" | "score" | "review";
-type RoutineId = "cricket-mpd" | "jdc-challenge";
+type PracticeView = "home" | "setup" | "score" | "review" | "match";
+type RoutineId = "cricket-mpd" | "jdc-challenge" | "cricket-match";
+type NavigationState = { dartstat: true; page: Page; practiceView: PracticeView };
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -28,6 +31,11 @@ export default function App() {
   const [practiceNotes, setPracticeNotes] = useState("");
   const [theme, setTheme] = useState<ThemeId>(() => readStoredTheme());
   const [startedAt, setStartedAt] = useState<Date | null>(null);
+  const navigationRef = useRef({ page, practiceView, darts, jdcDarts, userId: user?.uid });
+  const skipPopConfirmation = useRef(false);
+  const pendingPage = useRef<Page | null>(null);
+
+  navigationRef.current = { page, practiceView, darts, jdcDarts, userId: user?.uid };
 
   useEffect(() => {
     void finishGoogleRedirect().catch(() => setError("Google sign-in could not be completed. Please try again."));
@@ -49,13 +57,59 @@ export default function App() {
   useEffect(() => { if (user) void Promise.all([refreshSessions(user.uid), refreshDartSets(user.uid)]); }, [user, refreshSessions, refreshDartSets]);
   useEffect(() => { document.documentElement.dataset.theme = theme; storeTheme(theme); }, [theme]);
 
-  function beginPractice(nextRoutine: RoutineId) { setError(""); setRoutine(nextRoutine); setDarts([]); setJdcDarts([]); setSelectedDartSetId(""); setPracticeNotes(""); setStartedAt(null); setPracticeView("setup"); }
-  function startPractice() { setStartedAt(new Date()); setPracticeView("score"); }
-  function leavePractice(nextPage: Page = "practice") {
-    if (practiceView !== "home" && (darts.length || jdcDarts.length) && !window.confirm("Discard this unfinished practice session?")) return;
-    setDarts([]); setJdcDarts([]); setPracticeNotes(""); setStartedAt(null); setPracticeView("home"); setPage(nextPage);
+  useEffect(() => {
+    const initial: NavigationState = { dartstat: true, page: "practice", practiceView: "home" };
+    window.history.replaceState(initial, "");
+    function handlePopState(event: PopStateEvent) {
+      const current = navigationRef.current;
+      const requested = isNavigationState(event.state) ? event.state : initial;
+      const hasMatch = current.userId ? Boolean(localStorage.getItem(competitiveCricketStorageKey(current.userId))) : false;
+      const leavingFlow = current.practiceView !== "home" && (requested.page !== "practice" || requested.practiceView === "home");
+      const unfinished = leavingFlow && (current.darts.length > 0 || current.jdcDarts.length > 0 || (current.practiceView === "match" && hasMatch));
+      if (!skipPopConfirmation.current && unfinished && !window.confirm(current.practiceView === "match" ? "Leave this game? It will remain saved on this device." : "Discard this unfinished practice session?")) {
+        window.history.pushState({ dartstat: true, page: current.page, practiceView: current.practiceView } satisfies NavigationState, "");
+        return;
+      }
+      skipPopConfirmation.current = false;
+      const queuedPage = pendingPage.current;
+      pendingPage.current = null;
+      if (queuedPage) {
+        setDarts([]); setJdcDarts([]); setPracticeNotes(""); setStartedAt(null);
+        const next: NavigationState = { dartstat: true, page: queuedPage, practiceView: "home" };
+        if (queuedPage === "practice") window.history.replaceState(next, ""); else window.history.pushState(next, "");
+        setPage(queuedPage); setPracticeView("home");
+      } else {
+        if (leavingFlow) { setDarts([]); setJdcDarts([]); setPracticeNotes(""); setStartedAt(null); }
+        else if (current.practiceView === "review" && requested.practiceView === "score") {
+          setDarts(current.darts.slice(0, -1)); setJdcDarts(current.jdcDarts.slice(0, -1));
+        }
+        setPage(requested.page); setPracticeView(requested.practiceView);
+      }
+    }
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  function pushScreen(nextPage: Page, nextView: PracticeView) {
+    window.history.pushState({ dartstat: true, page: nextPage, practiceView: nextView } satisfies NavigationState, "");
+    setPage(nextPage); setPracticeView(nextView);
   }
-  function navigate(nextPage: Page) { if (practiceView !== "home") leavePractice(nextPage); else setPage(nextPage); }
+
+  function leaveFlow(nextPage: Page, depth: number) {
+    pendingPage.current = nextPage; skipPopConfirmation.current = true;
+    setDarts([]); setJdcDarts([]); setPracticeNotes(""); setStartedAt(null);
+    window.history.go(-depth);
+  }
+
+  function beginPractice(nextRoutine: RoutineId) { setError(""); setRoutine(nextRoutine); setDarts([]); setJdcDarts([]); setSelectedDartSetId(""); setPracticeNotes(""); setStartedAt(null); pushScreen("practice", nextRoutine === "cricket-match" ? "match" : "setup"); }
+  function startPractice() { setStartedAt(new Date()); pushScreen("practice", "score"); }
+  function leavePractice(nextPage: Page = "practice") {
+    const hasMatch = user ? Boolean(localStorage.getItem(competitiveCricketStorageKey(user.uid))) : false;
+    if (practiceView !== "home" && (darts.length || jdcDarts.length || (practiceView === "match" && hasMatch)) && !window.confirm(practiceView === "match" ? "Leave this game? It will remain saved on this device." : "Discard this unfinished practice session?")) return;
+    const depth = practiceView === "review" ? 3 : practiceView === "score" ? 2 : 1;
+    leaveFlow(nextPage, depth);
+  }
+  function navigate(nextPage: Page) { if (practiceView !== "home") leavePractice(nextPage); else pushScreen(nextPage, "home"); }
 
   if (!ready) return <div className="loading">Opening DartStat…</div>;
   if (!user) return <PublicLanding error={error} setError={setError} />;
@@ -66,10 +120,11 @@ export default function App() {
       {error && <p className="notice app-notice" role="alert">{error}</p>}
       {page === "practice" && practiceView === "home" && <PracticeHome user={user} sessions={sessions} loading={sessionsLoading} onStart={beginPractice} onHistory={() => setPage("history")} />}
       {page === "practice" && practiceView === "setup" && <PracticeSetup routine={routine} dartSets={dartSets} selectedDartSetId={selectedDartSetId} setSelectedDartSetId={setSelectedDartSetId} onCancel={() => leavePractice()} onStart={startPractice} onManage={() => leavePractice("darts")} />}
-      {page === "practice" && practiceView === "score" && routine === "cricket-mpd" && <CricketScorer darts={darts} setDarts={setDarts} onCancel={() => leavePractice()} onReview={() => setPracticeView("review")} />}
-      {page === "practice" && practiceView === "score" && routine === "jdc-challenge" && <JdcScorer darts={jdcDarts} setDarts={setJdcDarts} onCancel={() => leavePractice()} onReview={() => setPracticeView("review")} />}
-      {page === "practice" && practiceView === "review" && routine === "cricket-mpd" && <SessionReview user={user} darts={darts} dartSet={dartSets.find((item) => item.id === selectedDartSetId)} notes={practiceNotes} setNotes={setPracticeNotes} startedAt={startedAt!} onBack={() => { setDarts(darts.slice(0, -1)); setPracticeView("score"); }} onSaved={async () => { setDarts([]); setPracticeNotes(""); setStartedAt(null); setPracticeView("home"); await refreshSessions(user.uid); }} setError={setError} />}
-      {page === "practice" && practiceView === "review" && routine === "jdc-challenge" && <JdcReview user={user} darts={jdcDarts} dartSet={dartSets.find((item) => item.id === selectedDartSetId)} notes={practiceNotes} setNotes={setPracticeNotes} startedAt={startedAt!} onBack={() => { setJdcDarts(jdcDarts.slice(0, -1)); setPracticeView("score"); }} onSaved={async () => { setJdcDarts([]); setPracticeNotes(""); setStartedAt(null); setPracticeView("home"); await refreshSessions(user.uid); }} setError={setError} />}
+      {page === "practice" && practiceView === "score" && routine === "cricket-mpd" && <CricketScorer darts={darts} setDarts={setDarts} onCancel={() => leavePractice()} onReview={() => pushScreen("practice", "review")} />}
+      {page === "practice" && practiceView === "score" && routine === "jdc-challenge" && <JdcScorer darts={jdcDarts} setDarts={setJdcDarts} onCancel={() => leavePractice()} onReview={() => pushScreen("practice", "review")} />}
+      {page === "practice" && practiceView === "review" && routine === "cricket-mpd" && <SessionReview user={user} darts={darts} dartSet={dartSets.find((item) => item.id === selectedDartSetId)} notes={practiceNotes} setNotes={setPracticeNotes} startedAt={startedAt!} onBack={() => window.history.back()} onSaved={async () => { await refreshSessions(user.uid); leaveFlow("practice", 3); }} setError={setError} />}
+      {page === "practice" && practiceView === "review" && routine === "jdc-challenge" && <JdcReview user={user} darts={jdcDarts} dartSet={dartSets.find((item) => item.id === selectedDartSetId)} notes={practiceNotes} setNotes={setPracticeNotes} startedAt={startedAt!} onBack={() => window.history.back()} onSaved={async () => { await refreshSessions(user.uid); leaveFlow("practice", 3); }} setError={setError} />}
+      {page === "practice" && practiceView === "match" && <CompetitiveCricket userId={user.uid} profileName={user.displayName} onExit={() => leavePractice()} />}
       {page === "darts" && <DartSetsPage dartSets={dartSets} onSave={async (values, dartSetId) => { if (dartSetId) await updateDartSet(user.uid, dartSetId, values); else await addDartSet(user.uid, values); await refreshDartSets(user.uid); }} onArchive={async (dartSet) => { await archiveDartSet(user.uid, dartSet.id); await refreshDartSets(user.uid); }} />}
       {page === "history" && <History sessions={sessions} dartSets={dartSets} loading={sessionsLoading} onUpdateDartSet={async (session, dartSet) => { await updateSessionDartSet(user.uid, session.id, dartSet); await refreshSessions(user.uid); }} />}
       {page === "stats" && <Stats sessions={sessions} />}
@@ -101,6 +156,7 @@ function PracticeHome({ user, sessions, loading, onStart, onHistory }: { user: U
   const cricketResults = sessions.filter((session) => session.routineId === "cricket-mpd").map((session) => marksPerRound(asCricketDarts(session)));
   const jdcResults = sessions.filter((session) => session.routineId === "jdc-challenge").map((session) => jdcTotalScore(asJdcDarts(session)));
   const routines = [
+    { name: "Play Cricket", id: "cricket-match" as const, meta: "2–3 players · Local game", description: "Keep score together on one device", best: "Scoreboard" },
     { name: "Cricket Practice", id: "cricket-mpd" as const, meta: "21 darts · 7 targets", description: "Accuracy across the Cricket board", best: cricketResults.length ? `${formatMpr(Math.max(...cricketResults))} MPR` : "—" },
     { name: "JDC Challenge", id: "jdc-challenge" as const, meta: "57 darts · 3 sections", description: "Shanghai scoring and doubles accuracy", best: jdcResults.length ? String(Math.max(...jdcResults)) : "—" },
     { name: "Around the Clock" }, { name: "Doubles" }, { name: "Checkout Practice" }, { name: "Scoring Practice" },
@@ -238,3 +294,4 @@ function jdcResultShort(dart: JdcDart) { return { miss: "M", single: "S", double
 function asCricketDarts(session: StoredPracticeSession) { return (session.darts || []).filter((dart): dart is CricketDart => "marks" in dart); }
 function asJdcDarts(session: StoredPracticeSession) { return (session.darts || []).filter((dart): dart is JdcDart => "result" in dart); }
 function formatDate(timestamp: StoredPracticeSession["completedAt"]) { return timestamp?.toDate ? timestamp.toDate().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "Just now"; }
+function isNavigationState(value: unknown): value is NavigationState { return Boolean(value && typeof value === "object" && "dartstat" in value && "page" in value && "practiceView" in value); }
