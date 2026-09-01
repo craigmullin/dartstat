@@ -1,5 +1,5 @@
 export type JdcSection = "shanghai-low" | "doubles" | "shanghai-high";
-export type JdcResult = "miss" | "single" | "double" | "triple" | "double-bull";
+export type JdcResult = "miss" | "single" | "double" | "treble" | "triple" | "double-bull";
 
 export interface JdcDart {
   section: JdcSection;
@@ -28,7 +28,7 @@ export const JDC_PROMPTS: JdcPrompt[] = [
 export function createJdcDart(prompt: JdcPrompt, result: JdcResult): JdcDart {
   const allowed = prompt.section === "doubles"
     ? prompt.target === "B" ? ["miss", "double-bull"] : ["miss", "double"]
-    : ["miss", "single", "double", "triple"];
+    : ["miss", "single", "double", "treble", "triple"];
   if (!allowed.includes(result)) throw new Error(`Invalid result for ${prompt.target}.`);
   return { ...prompt, result };
 }
@@ -36,13 +36,13 @@ export function createJdcDart(prompt: JdcPrompt, result: JdcResult): JdcDart {
 export function jdcDartScore(dart: JdcDart) {
   if (dart.result === "miss") return 0;
   if (dart.section === "doubles") return dart.result === "double-bull" ? 100 : 50;
-  const multiplier = { single: 1, double: 2, triple: 3, "double-bull": 0 }[dart.result];
+  const multiplier = { single: 1, double: 2, treble: 3, triple: 3, "double-bull": 0 }[dart.result];
   return Number(dart.target) * multiplier;
 }
 
 export function hasShanghai(darts: JdcDart[]) {
   const results = new Set(darts.map((dart) => dart.result));
-  return results.has("single") && results.has("double") && results.has("triple");
+  return results.has("single") && results.has("double") && (results.has("treble") || results.has("triple"));
 }
 
 export function jdcVisitScore(darts: JdcDart[]) {

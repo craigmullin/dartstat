@@ -4,7 +4,7 @@ import { JDC_PROMPTS, createJdcDart, isCompleteJdcChallenge, jdcDartScore, jdcTo
 describe("JDC Challenge scoring", () => {
   it("adds a 100 point Shanghai bonus", () => {
     const prompt = JDC_PROMPTS[0];
-    const visit = ["single", "double", "triple"].map((result, index) => createJdcDart({ ...prompt, dart: (index + 1) as 1 | 2 | 3 }, result as "single" | "double" | "triple"));
+    const visit = ["single", "double", "treble"].map((result, index) => createJdcDart({ ...prompt, dart: (index + 1) as 1 | 2 | 3 }, result as "single" | "double" | "treble"));
     expect(jdcVisitScore(visit)).toBe(160);
   });
 

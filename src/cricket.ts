@@ -28,8 +28,10 @@ export function totalMarks(darts: CricketDart[]) {
   return darts.reduce((total, dart) => total + dart.marks, 0);
 }
 
-export function marksPerDart(darts: CricketDart[]) {
-  return darts.length ? totalMarks(darts) / darts.length : 0;
+export function marksPerRound(darts: CricketDart[]) {
+  const completedDartCount = darts.length - (darts.length % 3);
+  if (!completedDartCount) return 0;
+  return totalMarks(darts.slice(0, completedDartCount)) / (completedDartCount / 3);
 }
 
 export function isCompleteCricketSession(darts: CricketDart[]) {
@@ -44,6 +46,6 @@ export function targetTotal(darts: CricketDart[], target: CricketTarget) {
   return totalMarks(darts.filter((dart) => dart.target === target));
 }
 
-export function formatMpd(value: number) {
+export function formatMpr(value: number) {
   return value.toFixed(2);
 }

@@ -24,21 +24,22 @@ Preserve Firebase project `dartstat-cmullin`. Keep raw dart results as the sourc
 - Auth-domain commit: `b6ba70b update auth base url`
 - React 19, TypeScript, Vite, Firebase Authentication, Firestore, and Firebase Hosting.
 - Google Authentication uses browser-local persistence.
+- Local development always uses popup sign-in, including on narrow/mobile viewports, because redirecting from localhost through the production custom auth domain can lose Firebase's sessionStorage state.
 - Firestore data is stored below `users/{uid}/practiceSessions/{sessionId}`.
 - Checked-in rules allow a signed-in user to access only their own UID namespace.
 
 ## Implemented product experience
 
-### Cricket MPD
+### Cricket MPR
 
 The first playable routine is Cricket Practice:
 
 - Targets: `20`, `19`, `18`, `17`, `16`, `15`, and Bull.
 - Three darts per target; 21 darts total.
 - Numbered targets accept 0–3 marks per dart.
-- Bull accepts 0–2 marks per dart; triple Bull is invalid.
+- Bull accepts 0–2 marks per dart; treble Bull is invalid.
 - Raw per-dart marks are stored.
-- Total marks and MPD (`total marks / darts`) are derived.
+- Total marks and MPR (`total marks / completed three-dart visits`) are derived.
 - The UI provides automatic target progression, undo, final review, Firestore save, recent results, history detail, and Cricket lifetime/target statistics.
 
 Domain logic and tests:
@@ -57,8 +58,8 @@ The second playable routine contains 57 darts across 19 three-dart visits:
 Shanghai-section rules:
 
 - Only the active wedge scores.
-- Singles, doubles, and triples receive their normal wedge score.
-- A single, double, and triple in any order adds a 100-point Shanghai bonus.
+- Singles, doubles, and trebles receive their normal wedge score.
+- A single, double, and treble in any order adds a 100-point Shanghai bonus.
 - Example: `S10 + D10 + T10 = 60 + 100 = 160`.
 
 Doubles-section rules:
@@ -91,7 +92,27 @@ Completed sessions use:
 }
 ```
 
-Cricket darts retain target, dart number, and marks. JDC darts retain section, intended target, visit, dart number, and actual result. Totals, MPD, Shanghai bonuses, and section scores are derived rather than treated as authoritative stored values.
+Cricket darts retain target, dart number, and marks. JDC darts retain section, intended target, visit, dart number, and actual result. Totals, MPR, Shanghai bonuses, and section scores are derived rather than treated as authoritative stored values. The legacy internal routine ID remains `cricket-mpd` for compatibility with existing stored sessions; it is not a user-facing metric label.
+
+## Dart sets and equipment statistics
+
+Authenticated users can maintain an optional private collection of dart sets under `users/{uid}/dartSets/{dartSetId}`. Each active set retains a name, color, weight in grams, and tip compatibility (`steel`, `soft`, or `both`). Sets are archived instead of deleted so historical references remain intact.
+
+Before a routine begins, the user may select an active dart set or continue with no set recorded. New sessions optionally retain both `dartSetId` and a `dartSetSnapshot` containing the equipment details at the time of practice. Existing sessions without these fields remain compatible and are grouped as unspecified equipment.
+
+The Stats page derives separate equipment comparisons for Cricket MPR and JDC Challenge score, including session count, averages, best results, and Cricket rounds. Equipment domain logic and tests are in `src/dartSets.ts` and `src/dartSets.test.ts`.
+
+Both routine review screens include optional practice notes for grip, stance, release, adjustments, or other observations. Notes are retained while editing the last dart, saved with the completed session, and displayed in History detail.
+
+History detail supports editing the dart set attached to an existing session. A session can be assigned to any active set, reassigned, or cleared without changing raw dart results or notes; equipment statistics refresh from the updated session record.
+
+The main Stats page contains separate lifetime sections for Cricket MPR and JDC Challenge. JDC statistics include challenge count, average and best total score, plus average scores for Shanghai 10–15, Doubles 1–Bull, and Shanghai 15–20.
+
+Playable routine cards on the Practice page show the best saved result for that routine: MPR for Cricket and total score for JDC. A routine without saved results displays `Best —`.
+
+On mobile review screens, headings and result rows use compact spacing and the edit/save actions remain in a persistent two-button bar above the bottom navigation. This keeps saving available while long Cricket or JDC results and optional notes scroll.
+
+Scoring actions use a single vertical stack with scoring hits first and `MISS` isolated at the bottom. Cricket and JDC action buttons show only their action labels, without redundant mark or point-value sublabels.
 
 ## Settings and themes
 
@@ -124,6 +145,8 @@ Theme definitions and tests:
 - `src/themes.test.ts`
 
 Shared theme styling is in `src/styles.css`. Settings navigation exists in desktop and mobile navigation.
+
+The period in every visible `DartStat.` wordmark uses the invariant CMDC orange `#FF9D00`, matching craigmullin.com. Themes must not override this brand punctuation color.
 
 ## Authentication and custom domain
 
@@ -195,7 +218,7 @@ Do not deploy unless the owner explicitly authorizes it.
 1. Confirm Google sign-in works for an unrelated external Google account on both desktop and mobile.
 2. Improve authentication error reporting so the Firebase error code is visible safely.
 3. Update stale `NOW.md` statements after production authentication is confirmed.
-4. Consider adding JDC-specific lifetime statistics; the current Stats page focuses on Cricket MPD.
+4. Consider adding JDC-specific lifetime statistics; the current Stats page focuses on Cricket MPR.
 5. Consider route/code splitting later to address the Vite bundle-size advisory.
 
 ## Key files
@@ -205,7 +228,7 @@ Do not deploy unless the owner explicitly authorizes it.
 - `src/data.ts` — UID-scoped Firestore session persistence.
 - `src/auth.ts` — popup-versus-redirect Google sign-in behavior.
 - `src/firebase.ts` — Firebase project and custom auth-domain configuration.
-- `src/cricket.ts` — Cricket MPD domain rules.
+- `src/cricket.ts` — Cricket MPR domain rules.
 - `src/jdc.ts` — JDC Challenge domain rules.
 - `src/themes.ts` — theme catalog and local persistence.
 - `firestore.rules` — private UID-scoped Firestore rules.

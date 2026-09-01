@@ -10,7 +10,16 @@ import { auth } from "./firebase";
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
 
-export function prefersRedirect(viewportIsNarrow = window.matchMedia("(max-width: 760px)").matches, userAgent = navigator.userAgent) {
+export function isLocalDevelopmentHost(hostname = window.location.hostname) {
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
+}
+
+export function prefersRedirect(
+  viewportIsNarrow = window.matchMedia("(max-width: 760px)").matches,
+  userAgent = navigator.userAgent,
+  hostname = window.location.hostname,
+) {
+  if (isLocalDevelopmentHost(hostname)) return false;
   return viewportIsNarrow || /Android|iPhone|iPad|iPod/i.test(userAgent);
 }
 
