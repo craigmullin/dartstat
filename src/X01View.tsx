@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
-import { advanceX01, clearX01Game, createX01Game, dartValue, formatX01Dart, readX01Game, recordX01Dart, rematchX01, scoreX01, storeX01Game, undoX01, type X01Game, type X01InRule, type X01Multiplier, type X01OutRule } from "./x01";
+import { advanceX01, clearX01Game, dartValue, formatX01Dart, readX01Game, recordX01Dart, rematchX01, scoreX01, storeX01Game, undoX01, type X01Game, type X01InRule, type X01Multiplier, type X01OutRule } from "./x01";
 import { appendX01Digit, commitX01Total, createX01TotalGame, parseTurnTotal, rematchX01Total, scoreX01Totals, setX01Draft, undoX01Total, type X01TotalGame } from "./x01Totals";
 
 type StoredX01Game = X01Game | X01TotalGame;
@@ -52,11 +52,9 @@ export function X01CalculatorBoard({ game, setGame, onExit, onNewGame }: { game:
     requestAnimationFrame(() => { submitLock.current = false; });
   }
 
-  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     if (winner) return;
-    if (/^\d$/.test(event.key)) { event.preventDefault(); setGame(appendX01Digit(game, Number(event.key))); }
-    else if (event.key === "Backspace") { event.preventDefault(); setGame(setX01Draft(game, game.draft.slice(0, -1))); }
-    else if (event.key === "Enter" && !event.repeat) { event.preventDefault(); guardedCommit(false); }
+    if (event.key === "Enter" && !event.repeat) { event.preventDefault(); guardedCommit(false); }
   }
 
   const preview = parsed !== null ? Math.max(0, active.remainder - parsed) : null;
@@ -64,9 +62,9 @@ export function X01CalculatorBoard({ game, setGame, onExit, onNewGame }: { game:
     <header className="cricket-match-header"><button className="icon-button" onClick={onExit} aria-label="Back to practice">←</button><div><p className="eyebrow">{game.inRule === "open" ? "Open in" : "Double in"} · {game.outRule === "open" ? "Open out" : "Double out"}</p><h1>{game.startingScore}</h1></div><button className="text-button" onClick={onNewGame}>New game</button></header>
     {winner && <section className="cricket-winner" role="status"><p className="eyebrow">Game complete</p><h2>{winner.name} wins!</h2><p>Finished {game.startingScore}</p><div><button className="button button-secondary" onClick={() => setGame(undoX01Total(game))}>Undo last turn</button><button className="button" onClick={() => setGame(rematchX01Total(game))}>Rematch</button></div></section>}
     <PlayerPanels game={game} remainders={score.players.map((player) => player.remainder)} winner={Boolean(winner)} />
-    {!winner && <section className="x01-calculator" aria-label="Turn score calculator" onKeyDown={handleKeyDown} tabIndex={0}>
+    {!winner && <section className="x01-calculator" aria-label="Turn score calculator">
       <header><div><strong>{active.name} is throwing</strong><small>Enter the points that count. Leave blank for zero.</small></div><span>Turn {score.turns.filter((turn) => turn.playerId === active.id).length + 1}</span></header>
-      <div className={`x01-total-display ${error ? "invalid" : ""}`}><span>Turn score</span><strong>{game.draft || "—"}</strong><small>{error || (game.draft !== "" && preview !== null ? `${active.remainder} → ${preview}` : "Score changes after Next player")}</small></div>
+      <label className={`x01-total-display ${error ? "invalid" : ""}`}><span>Turn score</span><input value={game.draft} inputMode="numeric" placeholder="—" aria-invalid={Boolean(error)} aria-describedby="x01-score-help" onChange={(event) => setGame(setX01Draft(game, event.target.value))} onKeyDown={handleKeyDown} /><small id="x01-score-help">{error || (game.draft !== "" && preview !== null ? `${active.remainder} → ${preview}` : "Score changes after Next player")}</small></label>
       <div className="x01-keypad">{[7, 8, 9, 4, 5, 6, 1, 2, 3].map((digit) => <button type="button" onClick={() => setGame(appendX01Digit(game, digit))} key={digit}>{digit}</button>)}<button type="button" className="key-function" onClick={() => setGame(setX01Draft(game, ""))}>Clear</button><button type="button" onClick={() => setGame(appendX01Digit(game, 0))}>0</button><button type="button" className="key-function" aria-label="Backspace" onClick={() => setGame(setX01Draft(game, game.draft.slice(0, -1)))}>⌫</button></div>
       <div className="x01-calculator-actions"><button className="button button-secondary x01-bust-button" onClick={() => guardedCommit(true)}>Bust</button><button className="button" disabled={Boolean(error)} onClick={() => guardedCommit(false)}>Next player</button></div>
       <button className="text-button x01-undo-turn" disabled={!game.turns.length || Boolean(game.draft)} title={game.draft ? "Clear the turn score before undoing." : undefined} onClick={() => setGame(undoX01Total(game))}>Undo last turn</button>
@@ -102,6 +100,3 @@ function LegacyX01Board({ game, setGame, onExit, onNewGame }: { game: X01Game; s
     </section>
   </section>;
 }
-
-// Kept exported through the legacy engine for compatibility tests and saved version-1 games.
-export { createX01Game };

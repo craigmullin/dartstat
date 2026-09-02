@@ -81,7 +81,7 @@ describe("’01 scoring", () => {
     const game = add(createX01Game({ names: ["A", "B", "C"], startingScore: 701, inRule: "double", outRule: "open", startingPlayerIndex: 1 }), d(16));
     const setItem = vi.fn(); storeX01Game("uid", game, { setItem }); expect(setItem).toHaveBeenCalledWith(x01StorageKey("uid"), JSON.stringify(game));
     expect(readX01Game("uid", { getItem: () => JSON.stringify(game) })).toEqual(game);
-    expect(rematchX01(game)).toMatchObject({ startingScore: 701, inRule: "double", outRule: "open", startingPlayerIndex: 2, activePlayerIndex: 2, pendingDarts: [] });
+    expect(rematchX01(game)).toMatchObject({ version: 2, entryMode: "turn-total", startingScore: 701, inRule: "double", outRule: "open", startingPlayerIndex: 2, activePlayerIndex: 2, draft: "" });
     const removeItem = vi.fn(); clearX01Game("uid", { removeItem }); expect(removeItem).toHaveBeenCalledWith(x01StorageKey("uid"));
   });
 });

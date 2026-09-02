@@ -68,8 +68,7 @@ export function scoreX01Totals(game: X01TotalGame): X01TotalScore {
 }
 
 export function setX01Draft(game: X01TotalGame, draft: string): X01TotalGame {
-  if (draft !== "" && !/^\d{1,3}$/.test(draft)) throw new Error("Invalid score entry.");
-  return { ...game, draft };
+  return { ...game, draft: draft.slice(0, 32) };
 }
 
 export function appendX01Digit(game: X01TotalGame, digit: number): X01TotalGame {
@@ -83,7 +82,7 @@ export function commitX01Total(game: X01TotalGame, explicitBust = false): X01Tot
   const submittedTotal = parseTurnTotal(game.draft);
   if (!explicitBust && submittedTotal === null) throw new Error("Enter a whole score from 0 to 180.");
   const turn: X01TotalTurn = { playerId: game.players[game.activePlayerIndex].id, ...(game.draft !== "" ? { submittedTotal: Number(game.draft) } : {}), explicitBust };
-  return { ...game, turns: [...game.turns, turn], activePlayerIndex: explicitBust || submittedTotal !== 0 || game.draft === "" || game.draft === "0" ? (game.activePlayerIndex + 1) % game.players.length : game.activePlayerIndex, draft: "" };
+  return { ...game, turns: [...game.turns, turn], activePlayerIndex: (game.activePlayerIndex + 1) % game.players.length, draft: "" };
 }
 
 export function undoX01Total(game: X01TotalGame): X01TotalGame {
@@ -99,5 +98,5 @@ export function rematchX01Total(game: Pick<X01TotalGame, "players" | "startingSc
 export function isX01TotalGame(value: unknown): value is X01TotalGame {
   if (!value || typeof value !== "object") return false;
   const game = value as Partial<X01TotalGame>;
-  return game.version === 2 && game.gameType === "x01" && game.entryMode === "turn-total" && Array.isArray(game.players) && Array.isArray(game.turns) && typeof game.draft === "string";
+  return game.version === 2 && game.gameType === "x01" && game.entryMode === "turn-total" && Array.isArray(game.players) && Array.isArray(game.turns) && typeof game.draft === "string" && game.draft.length <= 32;
 }
