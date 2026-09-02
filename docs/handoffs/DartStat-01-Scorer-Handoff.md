@@ -169,8 +169,8 @@ Rules checked September 2, 2026. UI, supported score presets, three-player first
 
 ## Implementation record
 
-- Status as of September 2, 2026: Ready for implementation; this documentation change does not implement the scorer.
-- Implementation date: to be recorded by the implementer.
-- Implementation PR or commit: to be linked by the implementer.
-- Accepted deviations and rationale: record here when implementation differs from this specification.
-- Validation: record acceptance results with the implementation PR or commit.
+- Status as of September 2, 2026: Implemented locally and ready for acceptance review.
+- Implementation date: September 2, 2026.
+- Implementation PR or commit: not yet created; link the implementation PR or commit here when available.
+- Accepted deviations and rationale: none recorded. Competitive game recovery uses the existing UID-scoped browser-local persistence approach and remains separate from practice statistics.
+- Validation: `npm test` passed 36 tests across 7 files, including 9 focused ’01 engine/recovery tests; `npm run lint` passed; `npm run build` passed. Vite reports its existing advisory that the main JavaScript chunk exceeds 500 kB.
