@@ -3,6 +3,11 @@
 DartStat is a mobile-first darts practice and statistics application. The first
 complete routine is Cricket Practice.
 
+## Enhancement planning
+
+See [enhancement handoffs](docs/handoffs/README.md) for Cricket and ’01 scorer
+requirements, their motivation, and the implementation-record workflow.
+
 ## Local development
 
 Requirements: Node.js 22+, npm 10+, and Firebase CLI 15+.
