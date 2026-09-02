@@ -145,7 +145,8 @@ function PublicLanding({ error, setError }: { error: string; setError: (value: s
 }
 
 function Header({ page, setPage, user }: { page: Page; setPage: (page: Page) => void; user: User }) {
-  return <header className="app-header"><button className="brand brand-button" onClick={() => setPage("practice")}>DartStat<span>.</span></button><nav aria-label="Primary navigation">{(["practice", "darts", "history", "stats", "settings"] as Page[]).map((item) => <button className={page === item ? "active" : ""} key={item} onClick={() => setPage(item)}>{item[0].toUpperCase() + item.slice(1)}</button>)}</nav><div className="account"><span>{user.displayName || user.email}</span><button onClick={() => void signOut(auth)}>Sign out</button></div></header>;
+  const firstName = user.displayName?.trim().split(/\s+/)[0] || user.email?.split("@")[0] || "Account";
+  return <header className="app-header"><button className="brand brand-button" onClick={() => setPage("practice")}>DartStat<span>.</span></button><nav aria-label="Primary navigation">{(["practice", "darts", "history", "stats", "settings"] as Page[]).map((item) => <button className={page === item ? "active" : ""} key={item} onClick={() => setPage(item)}>{item[0].toUpperCase() + item.slice(1)}</button>)}</nav><details className="account-menu"><summary>{firstName}<span aria-hidden="true">⌄</span></summary><div><button onClick={() => void signOut(auth)}>Sign out</button></div></details></header>;
 }
 
 function PracticeSetup({ routine, dartSets, selectedDartSetId, setSelectedDartSetId, onCancel, onStart, onManage }: { routine: RoutineId; dartSets: DartSet[]; selectedDartSetId: string; setSelectedDartSetId: (id: string) => void; onCancel: () => void; onStart: () => void; onManage: () => void }) {
