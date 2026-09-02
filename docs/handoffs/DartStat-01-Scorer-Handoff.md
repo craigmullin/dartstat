@@ -2,6 +2,8 @@
 
 Implementation handoff for Roger · September 2, 2026
 
+> **Entry design superseded September 2, 2026:** Use [Calculator-style ’01 score entry](DartStat-01-Calculator-Entry-Handoff.md) for the current entry, undo, validation, and storage requirements. This document retains the original design rationale; its conflicting dart-by-dart requirements no longer govern new games.
+
 ## Why this change
 
 Extend DartStat from practice tracking and Cricket scoring to casual countdown games with friends, using a familiar interface for two or three players and configurable entry/finish rules.

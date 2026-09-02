@@ -5,7 +5,8 @@ Keep enhancement intent, agreed behavior, and acceptance criteria in this direct
 | Handoff | Purpose | Status at import, September 2, 2026 |
 | --- | --- | --- |
 | [Cricket scorer](DartStat-Cricket-Handoff.md) | Two- or three-player local Cricket | Original design record; implementation files exist, acceptance review not performed during import |
-| [’01 scorer](DartStat-01-Scorer-Handoff.md) | Two- or three-player countdown games with configurable in/out rules | Ready for implementation |
+| [Original ’01 scorer](DartStat-01-Scorer-Handoff.md) | Original countdown scorer design | Implemented on develop; entry design superseded below |
+| [Calculator-style ’01 entry](DartStat-01-Calculator-Entry-Handoff.md) | Trusted turn totals, Next player, Bust, and Undo | Current requested enhancement; ready for implementation |
 
 ## Working agreement
 
