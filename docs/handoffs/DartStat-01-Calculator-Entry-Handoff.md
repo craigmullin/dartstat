@@ -117,8 +117,8 @@ The repo's raw-dart guidance continues to apply where darts were recorded. This 
 
 Implement turn-total domain logic, calculator UI, undo, history, recovery, and legacy resume handling. Demo a normal score, blank skip, manual and automatic bust, trusted finish, undo after win, and three-player turn wrap. Run targeted scorer tests plus repo lint, tests, and build; manually check phone keypad layout and duplicate-submit behavior. No feature deployment is authorized by this handoff.
 
-- Status: Ready for implementation; this handoff does not change app behavior.
-- Implementation date: to be recorded.
-- Implementation PR or commit: to be linked.
-- Accepted deviations and rationale: to be recorded.
-- Validation: link test results and note any remaining limitations.
+- Status: Implemented locally and ready for acceptance review.
+- Implementation date: September 2, 2026.
+- Implementation PR or commit: not yet created; link the implementation PR or commit here when available.
+- Accepted deviations and rationale: none recorded. New games use version 2 turn totals; saved version-1 games retain the legacy dart-entry view and convert to calculator mode on rematch.
+- Validation: `npm test` passed 47 tests across 9 files, including focused version-2 domain and UI duplicate-submit coverage; `npm run lint` passed; `npm run build` passed. Manual in-app-browser layout review could not be completed because the browser-control runtime failed to initialize. Vite retains its existing main-chunk size advisory.

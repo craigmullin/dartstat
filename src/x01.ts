@@ -1,3 +1,5 @@
+import { createX01TotalGame, isX01TotalGame, scoreX01Totals, type X01TotalGame } from "./x01Totals";
+
 export const X01_STORAGE_PREFIX = "dartstat-x01-game";
 
 export type X01InRule = "open" | "double";
@@ -158,6 +160,6 @@ export function clearX01Game(userId: string, storage: Pick<Storage, "removeItem"
 
 function scoreX01TotalsForValidation(game: X01TotalGame) {
   if (game.players.length < 2 || game.players.length > 3 || game.activePlayerIndex < 0 || game.activePlayerIndex >= game.players.length) throw new Error("Invalid saved game.");
-  if (game.draft !== "" && !/^\d{1,3}$/.test(game.draft)) throw new Error("Invalid saved draft.");
+  if (game.draft.length > 32) throw new Error("Invalid saved draft.");
+  scoreX01Totals(game);
 }
-import { createX01TotalGame, isX01TotalGame, type X01TotalGame } from "./x01Totals";

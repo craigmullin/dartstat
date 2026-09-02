@@ -62,6 +62,7 @@ describe("’01 turn-total scoring", () => {
     expect(parseTurnTotal("181")).toBeNull(); expect(parseTurnTotal("-1")).toBeNull(); expect(parseTurnTotal("1.5")).toBeNull(); expect(parseTurnTotal("abc")).toBeNull();
     const game = setX01Draft(createX01TotalGame({ names: ["A", "B"] }), "181");
     expect(() => commitX01Total(game)).toThrow(); expect(game.turns).toHaveLength(0);
+    expect(setX01Draft(game, "abc").draft).toBe("abc");
   });
 
   it("undoes scores, busts, and wins across three-player wrap", () => {
