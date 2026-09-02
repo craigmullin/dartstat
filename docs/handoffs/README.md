@@ -7,6 +7,7 @@ Keep enhancement intent, agreed behavior, and acceptance criteria in this direct
 | [Cricket scorer](DartStat-Cricket-Handoff.md) | Two- or three-player local Cricket | Original design record; implementation files exist, acceptance review not performed during import |
 | [Original ’01 scorer](DartStat-01-Scorer-Handoff.md) | Original countdown scorer design | Implemented on develop; entry design superseded below |
 | [Calculator-style ’01 entry](DartStat-01-Calculator-Entry-Handoff.md) | Trusted turn totals, Next player, Bust, and Undo | Current requested enhancement; ready for implementation |
+| [Maskable app icon](DartStat-Maskable-Icon-Fix.md) | Match SpikeStat's launcher icon packaging | Implemented on fix/maskable-app-icon; deployment and device verification pending |
 
 ## Working agreement
 
