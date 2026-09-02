@@ -132,8 +132,8 @@ export function undoX01(game: X01Game): X01Game {
   return { ...game, visits: game.visits.slice(0, -1), pendingDarts: previous.darts, activePlayerIndex };
 }
 
-export function rematchX01(game: X01Game): X01Game {
-  return createX01Game({ names: game.players.map((player) => player.name), startingScore: game.startingScore, inRule: game.inRule, outRule: game.outRule, startingPlayerIndex: (game.startingPlayerIndex + 1) % game.players.length });
+export function rematchX01(game: X01Game): X01TotalGame {
+  return createX01TotalGame({ names: game.players.map((player) => player.name), startingScore: game.startingScore, inRule: game.inRule, outRule: game.outRule, startingPlayerIndex: (game.startingPlayerIndex + 1) % game.players.length });
 }
 
 export function formatX01Dart(dart: X01Dart) {
@@ -143,13 +143,21 @@ export function formatX01Dart(dart: X01Dart) {
 }
 
 export function x01StorageKey(userId: string) { return `${X01_STORAGE_PREFIX}:${userId}`; }
-export function readX01Game(userId: string, storage: Pick<Storage, "getItem"> = localStorage): X01Game | null {
+export function readX01Game(userId: string, storage: Pick<Storage, "getItem"> = localStorage): X01Game | X01TotalGame | null {
   try {
     const raw = storage.getItem(x01StorageKey(userId)); if (!raw) return null;
-    const game = JSON.parse(raw) as X01Game;
+    const parsed: unknown = JSON.parse(raw);
+    if (isX01TotalGame(parsed)) { scoreX01TotalsForValidation(parsed); return parsed; }
+    const game = parsed as X01Game;
     if (game.version !== 1 || game.gameType !== "x01" || !Array.isArray(game.players) || game.players.length < 2 || game.players.length > 3 || !Array.isArray(game.visits) || !Array.isArray(game.pendingDarts)) return null;
     scoreX01(game); return game;
   } catch { return null; }
 }
-export function storeX01Game(userId: string, game: X01Game, storage: Pick<Storage, "setItem"> = localStorage) { storage.setItem(x01StorageKey(userId), JSON.stringify(game)); }
+export function storeX01Game(userId: string, game: X01Game | X01TotalGame, storage: Pick<Storage, "setItem"> = localStorage) { storage.setItem(x01StorageKey(userId), JSON.stringify(game)); }
 export function clearX01Game(userId: string, storage: Pick<Storage, "removeItem"> = localStorage) { storage.removeItem(x01StorageKey(userId)); }
+
+function scoreX01TotalsForValidation(game: X01TotalGame) {
+  if (game.players.length < 2 || game.players.length > 3 || game.activePlayerIndex < 0 || game.activePlayerIndex >= game.players.length) throw new Error("Invalid saved game.");
+  if (game.draft !== "" && !/^\d{1,3}$/.test(game.draft)) throw new Error("Invalid saved draft.");
+}
+import { createX01TotalGame, isX01TotalGame, type X01TotalGame } from "./x01Totals";
