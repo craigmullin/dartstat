@@ -22,9 +22,9 @@ function X01Setup({ profileName, onCancel, onStart }: { profileName?: string | n
   const [starter, setStarter] = useState(0);
   const updateName = (index: number, name: string) => { const next = [...names]; next[index] = name; setNames(next); };
   return <section className="practice-setup cricket-match-setup"><button className="text-button back-button" onClick={onCancel}>← Practice</button><div className="setup-card"><p className="eyebrow">Local game</p><h1>Play ’01</h1>
-    <fieldset className="x01-choice"><legend>Starting score</legend>{([301, 501, 701] as const).map((score) => <label key={score}><input type="radio" checked={startingScore === score} onChange={() => setStartingScore(score)} />{score}</label>)}</fieldset>
-    <fieldset className="x01-choice"><legend>Starting rule</legend><label><input type="radio" checked={inRule === "open"} onChange={() => setInRule("open")} />Open in</label><label><input type="radio" checked={inRule === "double"} onChange={() => setInRule("double")} />Double in</label></fieldset>
-    <fieldset className="x01-choice"><legend>Finishing rule</legend><label><input type="radio" checked={outRule === "open"} onChange={() => setOutRule("open")} />Open out</label><label><input type="radio" checked={outRule === "double"} onChange={() => setOutRule("double")} />Double out</label></fieldset>
+    <fieldset className="x01-choice"><legend>Starting score</legend>{([301, 501, 701] as const).map((score) => <label className={startingScore === score ? "selected" : ""} key={score}><input type="radio" checked={startingScore === score} onChange={() => setStartingScore(score)} />{score}</label>)}</fieldset>
+    <fieldset className="x01-choice"><legend>Starting rule</legend><label className={inRule === "open" ? "selected" : ""}><input type="radio" checked={inRule === "open"} onChange={() => setInRule("open")} />Open in</label><label className={inRule === "double" ? "selected" : ""}><input type="radio" checked={inRule === "double"} onChange={() => setInRule("double")} />Double in</label></fieldset>
+    <fieldset className="x01-choice"><legend>Finishing rule</legend><label className={outRule === "open" ? "selected" : ""}><input type="radio" checked={outRule === "open"} onChange={() => setOutRule("open")} />Open out</label><label className={outRule === "double" ? "selected" : ""}><input type="radio" checked={outRule === "double"} onChange={() => setOutRule("double")} />Double out</label></fieldset>
     <fieldset className="player-count"><legend>Players</legend><label><input type="radio" checked={playerCount === 2} onChange={() => { setPlayerCount(2); if (starter > 1) setStarter(0); }} />Two</label><label><input type="radio" checked={playerCount === 3} onChange={() => setPlayerCount(3)} />Three</label></fieldset>
     <div className="player-name-fields">{names.slice(0, playerCount).map((name, index) => <label key={index}>Player {index + 1}<input value={name} maxLength={24} onChange={(event) => updateName(index, event.target.value)} /></label>)}</div>
     <label>Throws first<select value={starter} onChange={(event) => setStarter(Number(event.target.value))}>{names.slice(0, playerCount).map((name, index) => <option key={index} value={index}>{name.trim() || `Player ${index + 1}`}</option>)}</select></label>
@@ -46,7 +46,8 @@ export function X01CalculatorBoard({ game, setGame, onExit, onNewGame }: { game:
     submitLock.current = true;
     const before = active.remainder;
     const next = commitX01Total(game, explicitBust);
-    const last = scoreX01Totals(next).turns.at(-1)!;
+    const scoredTurns = scoreX01Totals(next).turns;
+    const last = scoredTurns[scoredTurns.length - 1]!;
     setAnnouncement(last.outcome === "bust" ? `${active.name} busted — stays on ${before}` : last.outcome === "finish" ? `${active.name} wins` : `${active.name} scored ${last.credited}`);
     setGame(next);
     requestAnimationFrame(() => { submitLock.current = false; });

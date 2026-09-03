@@ -301,7 +301,9 @@ function asJdcDarts(session: StoredPracticeSession) { return (session.darts || [
 function formatDate(timestamp: StoredPracticeSession["completedAt"]) { return timestamp?.toDate ? timestamp.toDate().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "Just now"; }
 function isNavigationState(value: unknown): value is NavigationState { return Boolean(value && typeof value === "object" && "dartstat" in value && "page" in value && "practiceView" in value); }
 function hasStoredMatch(view: PracticeView, userId: string) {
-  if (view === "match") return Boolean(localStorage.getItem(competitiveCricketStorageKey(userId)));
-  if (view === "x01") return Boolean(localStorage.getItem(x01StorageKey(userId)));
-  return false;
+  try {
+    if (view === "match") return Boolean(localStorage.getItem(competitiveCricketStorageKey(userId)));
+    if (view === "x01") return Boolean(localStorage.getItem(x01StorageKey(userId)));
+    return false;
+  } catch { return false; }
 }

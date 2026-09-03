@@ -97,7 +97,7 @@ export function advanceCompetitiveCricket(game: CompetitiveCricketGame): Competi
 
 export function undoCompetitiveCricket(game: CompetitiveCricketGame): CompetitiveCricketGame {
   if (game.pendingDarts.length) return { ...game, pendingDarts: game.pendingDarts.slice(0, -1) };
-  const previous = game.turns.at(-1);
+  const previous = game.turns[game.turns.length - 1];
   if (!previous) return game;
   const previousPlayerIndex = game.players.findIndex((player) => player.id === previous.playerId);
   return { ...game, turns: game.turns.slice(0, -1), pendingDarts: previous.darts, activePlayerIndex: previousPlayerIndex };

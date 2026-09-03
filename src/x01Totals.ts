@@ -87,7 +87,7 @@ export function commitX01Total(game: X01TotalGame, explicitBust = false): X01Tot
 
 export function undoX01Total(game: X01TotalGame): X01TotalGame {
   if (game.draft || !game.turns.length) return game;
-  const previous = game.turns.at(-1)!;
+  const previous = game.turns[game.turns.length - 1]!;
   return { ...game, turns: game.turns.slice(0, -1), activePlayerIndex: game.players.findIndex((player) => player.id === previous.playerId), draft: "" };
 }
 

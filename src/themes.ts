@@ -18,10 +18,12 @@ export function isThemeId(value: string | null): value is ThemeId {
 }
 
 export function readStoredTheme(storage: Pick<Storage, "getItem"> = localStorage): ThemeId {
-  const stored = storage.getItem(THEME_STORAGE_KEY);
-  return isThemeId(stored) ? stored : "pink";
+  try {
+    const stored = storage.getItem(THEME_STORAGE_KEY);
+    return isThemeId(stored) ? stored : "pink";
+  } catch { return "pink"; }
 }
 
 export function storeTheme(theme: ThemeId, storage: Pick<Storage, "setItem"> = localStorage) {
-  storage.setItem(THEME_STORAGE_KEY, theme);
+  try { storage.setItem(THEME_STORAGE_KEY, theme); } catch { /* Keep the in-memory theme when device storage is unavailable. */ }
 }

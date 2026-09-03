@@ -11,6 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "core-js": "^3.45.1",
     "firebase": "^12.1.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
@@ -32,5 +33,7 @@
     "vite": "^7.1.2",
     "vitest": "^3.2.4"
   },
-  "engines": { "node": ">=20.19" }
+  "engines": {
+    "node": ">=20.19"
+  }
 }

@@ -1,6 +1,14 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import App from "./App";
-import "./styles.css";
+import "core-js/stable";
 
-createRoot(document.getElementById("root")!).render(<StrictMode><App /></StrictMode>);
+function showStartupError() {
+  const message = document.getElementById("startup-message");
+  if (message) {
+    message.textContent = "DartStat could not start on this device. Reload the page and try again.";
+    message.setAttribute("data-state", "error");
+  }
+}
+
+void import("./bootstrap").catch((error: unknown) => {
+  console.error("DartStat startup failed", error);
+  showStartupError();
+});

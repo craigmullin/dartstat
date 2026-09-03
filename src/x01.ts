@@ -128,7 +128,7 @@ export function advanceX01(game: X01Game): X01Game {
 
 export function undoX01(game: X01Game): X01Game {
   if (game.pendingDarts.length) return { ...game, pendingDarts: game.pendingDarts.slice(0, -1) };
-  const previous = game.visits.at(-1);
+  const previous = game.visits[game.visits.length - 1];
   if (!previous) return game;
   const activePlayerIndex = game.players.findIndex((player) => player.id === previous.playerId);
   return { ...game, visits: game.visits.slice(0, -1), pendingDarts: previous.darts, activePlayerIndex };

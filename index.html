@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="DartStat personal darts practice tracking." />
     <meta name="theme-color" content="#f72585" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="DartStat" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
@@ -12,7 +15,25 @@
     <title>DartStat</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main id="startup-message" style="box-sizing:border-box;min-height:100vh;padding:3rem 1.5rem;display:flex;align-items:center;justify-content:center;background:#fff8fc;color:#241924;font:600 18px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-align:center">
+        Loading DartStat…
+      </main>
+    </div>
+    <script>
+      (function () {
+        var failed = false;
+        function showFailure() {
+          if (failed) return;
+          var message = document.getElementById("startup-message");
+          if (!message) return;
+          failed = true;
+          message.innerHTML = "DartStat could not start on this device.<br><button type=\"button\" onclick=\"location.reload()\" style=\"min-height:44px;margin-top:1rem;padding:.65rem 1rem;border:0;border-radius:8px;background:#f72585;color:white;font:inherit\">Reload</button>";
+        }
+        window.addEventListener("error", showFailure);
+        window.setTimeout(showFailure, 15000);
+      }());
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
