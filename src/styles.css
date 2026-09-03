@@ -140,6 +140,22 @@ h2 { font-size: 1.4rem; }
 @media (min-width: 761px) and (max-width: 900px) {
   .content-score { padding: 1.5rem 1rem 3rem; }
   .cricket-match-header { min-height: 64px; }
+  .cricket-player-head { min-height: 104px; }
+  .cricket-player-head > span { font-size: .95rem; }
+  .cricket-player-head strong { font-size: 2.75rem; }
+  .cricket-player-head small { font-size: .8rem; }
+  .cricket-target-head { min-height: 104px; font-size: .9rem; }
+  .cricket-cell { min-height: 66px; }
+  .cricket-mark-trigger { min-height: 65px; }
+  .cricket-target-label { font-size: 1.45rem; }
+  .cricket-target-label small { font-size: .65rem; }
+  .cricket-mark { width: 52px; height: 52px; }
+  .cricket-empty-mark { width: 11px; height: 11px; }
+  .cricket-board-3 .cricket-mark { width: 46px; height: 46px; }
+  .cricket-turn-entry > header strong { font-size: 1.25rem; }
+  .cricket-turn-entry > header small, .cricket-turn-entry > header > span { font-size: .82rem; }
+  .cricket-dart-slot { min-height: 66px; }
+  .cricket-dart-slot strong { font-size: 1.1rem; }
   .x01-players article { min-height: 150px; }
   .x01-players span { font-size: 1rem; }
   .x01-players strong { font-size: 4rem; }

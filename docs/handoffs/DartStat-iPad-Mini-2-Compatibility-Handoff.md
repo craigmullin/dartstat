@@ -107,4 +107,6 @@ For the first review, provide the compatibility commit, commands/results, bundle
 
 Craig's September 3 device photo confirmed that iOS 12 discarded `clamp()` font-size declarations, leaving player scores at inherited body size. Fixed font-size and spacing fallbacks now cover browsers without `clamp()`. A 761–900px tablet scoring query also enlarges score panels, turn entry, keypad labels, and actions at the iPad mini's 768px portrait viewport without changing the phone layout. Actual-device typography and landscape acceptance remain pending.
 
+A second device photo confirmed that the competitive Cricket board still used phone-scale fixed sizes on the tablet. The same tablet-only query now enlarges player scores, target labels, Cricket mark SVGs, board rows, and pending-dart text while retaining smaller three-player marks where horizontal space is tighter. Mobile rules are unchanged. Actual-device Cricket layout acceptance remains pending.
+
 Companions: [Cricket scorer](DartStat-Cricket-Handoff.md), [calculator-style ’01](DartStat-01-Calculator-Entry-Handoff.md), [project handoff](../../DARTSTAT_HANDOFF_2026-09-01.md).
