@@ -23,15 +23,31 @@
     <script>
       (function () {
         var failed = false;
-        function showFailure() {
+        function showFailure(detail) {
           if (failed) return;
           var message = document.getElementById("startup-message");
           if (!message) return;
           failed = true;
-          message.innerHTML = "DartStat could not start on this device.<br><button type=\"button\" onclick=\"location.reload()\" style=\"min-height:44px;margin-top:1rem;padding:.65rem 1rem;border:0;border-radius:8px;background:#f72585;color:white;font:inherit\">Reload</button>";
+          while (message.firstChild) message.removeChild(message.firstChild);
+          var heading = document.createElement("div");
+          heading.textContent = "DartStat could not start on this device.";
+          message.appendChild(heading);
+          if (detail) {
+            var diagnostic = document.createElement("small");
+            diagnostic.style.cssText = "display:block;max-width:36rem;margin-top:.75rem;color:#5a294f;font:400 13px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;word-break:break-word";
+            diagnostic.textContent = "Startup detail: " + String(detail).slice(0, 180);
+            heading.appendChild(diagnostic);
+          }
+          var reload = document.createElement("button");
+          reload.type = "button";
+          reload.textContent = "Reload";
+          reload.style.cssText = "min-height:44px;margin-top:1rem;padding:.65rem 1rem;border:0;border-radius:8px;background:#f72585;color:white;font:inherit";
+          reload.onclick = function () { location.reload(); };
+          heading.appendChild(reload);
         }
-        window.addEventListener("error", showFailure);
-        window.setTimeout(showFailure, 15000);
+        window.addEventListener("error", function (event) { showFailure(event.message || "script error"); });
+        window.addEventListener("unhandledrejection", function (event) { showFailure(event.reason && event.reason.message ? event.reason.message : "startup promise rejected"); });
+        window.setTimeout(function () { showFailure("startup timed out after 45 seconds"); }, 45000);
       }());
     </script>
     <script type="module" src="/src/main.tsx"></script>
