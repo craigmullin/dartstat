@@ -45,7 +45,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 button:focus-visible, a:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
 h1, h2, h3, p { margin-top: 0; }
 h1, h2, h3, .brand, .product-name, .routine-card strong, .page-heading aside strong { font-family: Outfit, Inter, sans-serif; }
-h1 { margin-bottom: .75rem; font-size: clamp(2rem, 4vw, 3.25rem); line-height: 1.05; letter-spacing: -.035em; }
+h1 { margin-bottom: .75rem; font-size: 2rem; font-size: clamp(2rem, 4vw, 3.25rem); line-height: 1.05; letter-spacing: -.035em; }
 h2 { font-size: 1.4rem; }
 .brand span, .product-name span { color: var(--color-brand-period); }.placeholder h1 span { color: var(--color-attack); }
 .eyebrow { margin-bottom: .5rem; color: var(--color-primary); font-size: .75rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
@@ -125,4 +125,34 @@ h2 { font-size: 1.4rem; }
 @supports not (inset: 0) {
   .bottom-nav { right: 0; bottom: 0; left: 0; }
   .dart-set-card .dart-color { top: 0; right: 0; left: 0; }
+}
+@supports not (font-size: clamp(1rem, 2vw, 2rem)) {
+  .auth-card h1 { font-size: 2.75rem; }
+  .placeholder h1 { font-size: 3rem; }
+  .target-display strong { font-size: 7rem; }
+  .review-heading h1 { font-size: 2rem; }
+  .x01-players strong { font-size: 4rem; }
+  .x01-players-3 strong { font-size: 3rem; }
+  .setup-card, .dart-set-form { padding: 2rem; }
+}
+
+/* Tablet scoring treatment: roomy controls and glanceable scores at iPad mini width. */
+@media (min-width: 761px) and (max-width: 900px) {
+  .content-score { padding: 1.5rem 1rem 3rem; }
+  .cricket-match-header { min-height: 64px; }
+  .x01-players article { min-height: 150px; }
+  .x01-players span { font-size: 1rem; }
+  .x01-players strong { font-size: 4rem; }
+  .x01-players small { font-size: .8rem; }
+  .x01-calculator { padding: 1.25rem; }
+  .x01-calculator > header strong { font-size: 1.3rem; }
+  .x01-calculator > header small, .x01-calculator > header > span { font-size: .85rem; }
+  .x01-total-display { min-height: 108px; }
+  .x01-total-display span { font-size: .9rem; }
+  .x01-total-display small { font-size: .8rem; }
+  .x01-total-display input { font-size: 3rem; }
+  .x01-keypad button { min-height: 72px; font-size: 1.75rem; }
+  .x01-keypad .key-function { font-size: 1rem; }
+  .x01-calculator-actions .button { min-height: 60px; font-size: 1rem; }
+  .x01-undo-turn { min-height: 48px; font-size: 1rem; }
 }

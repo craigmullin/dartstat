@@ -95,12 +95,16 @@ For the first review, provide the compatibility commit, commands/results, bundle
 
 ## Implementation record
 
-- Status: First compatibility build deployed; actual-device validation pending.
+- Status: Application startup and scoring UI confirmed on the iPad mini 2; tablet typography/layout retest pending.
 - Handoff date: September 3, 2026.
 - Implementation PR/commit: `ec1d1fa` (`support iOS 12 scoring devices`) on `develop`, September 3, 2026.
-- Confirmed device root cause: The first compatibility deployment reached the static diagnostic surface but failed with `Can't find variable: BigInt`. Firebase 12's Firestore bundle evaluated native `BigInt(...)` constants during startup; iOS 12 has no native BigInt implementation. Firebase was pinned to 11.10.0, whose Firestore bundle does not execute BigInt arithmetic at startup. Actual-device retest of the replacement deployment remains pending.
+- Confirmed device root cause: The first compatibility deployment reached the static diagnostic surface but failed with `Can't find variable: BigInt`. Firebase 12's Firestore bundle evaluated native `BigInt(...)` constants during startup; iOS 12 has no native BigInt implementation. Firebase was pinned to 11.10.0, whose Firestore bundle does not execute BigInt arithmetic at startup. Craig confirmed the replacement deployment starts and reaches the authenticated calculator scorer on the actual iPad mini 2.
 - Baseline validation for this documentation change: lint passed; all 48 tests across 9 files passed; production build passed with the existing chunk-size advisory (main JS approximately 799 kB, 239 kB gzip). These modern-runtime checks do not establish iOS 12 compatibility.
 - Validation of compatibility implementation: Explicit Safari 12 production target; `core-js` ES stable polyfills load before the application; Firebase pinned to 11.10.0; known application `.at()` calls removed; old-WebKit selection, color, and positioning fallbacks added; pre-React loading/failure surface and Apple standalone metadata added. Lint passed, all 48 tests across 9 files passed, and the production build passed. The replacement main JavaScript bundle is approximately 828 kB (266 kB gzip). Firebase Hosting deployment to `dartstat-cmullin` completed September 3, 2026. Device acceptance remains pending.
 - Accepted deviations: None. Record any agreed fallback and its limitations here.
+
+### Device layout follow-up
+
+Craig's September 3 device photo confirmed that iOS 12 discarded `clamp()` font-size declarations, leaving player scores at inherited body size. Fixed font-size and spacing fallbacks now cover browsers without `clamp()`. A 761–900px tablet scoring query also enlarges score panels, turn entry, keypad labels, and actions at the iPad mini's 768px portrait viewport without changing the phone layout. Actual-device typography and landscape acceptance remain pending.
 
 Companions: [Cricket scorer](DartStat-Cricket-Handoff.md), [calculator-style ’01](DartStat-01-Calculator-Entry-Handoff.md), [project handoff](../../DARTSTAT_HANDOFF_2026-09-01.md).
