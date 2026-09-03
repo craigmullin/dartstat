@@ -97,7 +97,7 @@ For the first review, provide the compatibility commit, commands/results, bundle
 
 - Status: First compatibility build deployed; actual-device validation pending.
 - Handoff date: September 3, 2026.
-- Implementation PR/commit: Implemented on `develop` September 3, 2026; commit link to be recorded after commit.
+- Implementation PR/commit: `ec1d1fa` (`support iOS 12 scoring devices`) on `develop`, September 3, 2026.
 - Confirmed device root cause: Pending; source-level compatibility findings listed above.
 - Baseline validation for this documentation change: lint passed; all 48 tests across 9 files passed; production build passed with the existing chunk-size advisory (main JS approximately 799 kB, 239 kB gzip). These modern-runtime checks do not establish iOS 12 compatibility.
 - Validation of compatibility implementation: Explicit Safari 12 production target; `core-js` ES stable polyfills load before the application; known application `.at()` calls removed; old-WebKit selection, color, and positioning fallbacks added; pre-React loading/failure surface and Apple standalone metadata added. Lint passed, all 48 tests across 9 files passed, and the production build passed. Main application JavaScript is approximately 807 kB (240 kB gzip), plus a 223 kB (82 kB gzip) compatibility/bootstrap chunk. Firebase Hosting deployment to `dartstat-cmullin` completed September 3, 2026. Device acceptance remains pending.
