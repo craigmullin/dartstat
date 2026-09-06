@@ -112,6 +112,45 @@ h2 { font-size: 1.4rem; }
   .theme-grid, .dart-form-grid { grid-template-columns: 1fr; }.theme-option { min-height: 96px; grid-template-columns: 58px 1fr 20px; }.theme-swatches { width: 58px; height: 58px; }.darts-page .page-heading { align-items: stretch; }.darts-page .page-heading > .button { width: 100%; }
   .player-name-fields { grid-template-columns: 1fr; }.cricket-match-shell { margin-top: -.5rem; }.cricket-match-header { grid-template-columns: 44px 1fr auto; }.cricket-board { border-radius: 10px; }.cricket-player-head { min-height: 72px; }.cricket-player-head strong { font-size: 1.55rem; }.cricket-cell { min-height: 48px; }.cricket-board-3 .cricket-player-head > span { font-size: .68rem; }.cricket-board-3 .cricket-mark { width: 31px; height: 31px; }.cricket-turn-entry { padding: .75rem; }.cricket-mark-chooser button { min-height: 62px; flex-direction: column; gap: 0; }.cricket-turn-actions .button { min-height: 48px; padding-inline: .5rem; }.cricket-winner > div { display: grid; grid-template-columns: 1fr 1fr; }.x01-players article { min-height: 96px; padding: .55rem .35rem; }.x01-players-3 strong { font-size: clamp(2rem, 12vw, 3rem); }.x01-players-3 span { font-size: .68rem; }.x01-number-grid button { min-height: 44px; }.x01-shell .cricket-turn-entry > header { gap: .4rem; }.x01-calculator { padding: .75rem; }.x01-keypad button { min-height: 52px; }.x01-total-display { min-height: 78px; }.x01-total-display strong { font-size: 2rem; }
 }
+
+.bobs27-setup .setup-card { display: grid; gap: 1rem; }
+.bobs27-setup .setup-card h1 { margin: 0; }
+.bobs27-setup .setup-card > p:not(.eyebrow) { margin: 0; color: var(--color-ink-muted); }
+.bobs27-mode { margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; border: 0; }
+.bobs27-mode legend { margin-bottom: .5rem; color: var(--color-ink-muted); font-size: .75rem; font-weight: 700; }
+.bobs27-mode label { min-height: 92px; padding: .8rem; display: grid; grid-template-columns: auto 1fr; align-items: start; gap: .6rem; border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-canvas); cursor: pointer; }
+.bobs27-mode label.selected { border-color: var(--color-primary); background: var(--color-primary-soft); }
+.bobs27-mode strong, .bobs27-mode small { display: block; }
+.bobs27-mode small { margin-top: .25rem; color: var(--color-ink-muted); font-size: .7rem; line-height: 1.35; }
+.bobs27-scoreboard { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; margin: .75rem 0; }
+.bobs27-scoreboard article { min-height: 150px; padding: .8rem; display: flex; align-items: center; justify-content: center; flex-direction: column; border: 1px solid var(--color-line); border-radius: var(--radius-card); background: var(--color-surface); text-align: center; }
+.bobs27-scoreboard span { color: var(--color-ink-muted); font-size: .75rem; font-weight: 700; }
+.bobs27-scoreboard strong { font-family: Outfit, sans-serif; font-size: clamp(3.5rem, 10vw, 5.5rem); line-height: 1; font-variant-numeric: tabular-nums; }
+.bobs27-scoreboard small { min-height: 1rem; margin-top: .35rem; color: var(--color-primary); font-size: .72rem; }
+.bobs27-entry { padding: 1rem; border: 1px solid var(--color-line); border-radius: var(--radius-card); background: var(--color-surface); text-align: center; }
+.bobs27-entry > p:first-child { margin: 0 0 .75rem; font-weight: 700; }
+.bobs27-hit-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; }
+.bobs27-hit-buttons button { min-height: 84px; display: flex; align-items: center; justify-content: center; flex-direction: column; border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-canvas); color: var(--color-ink); cursor: pointer; }
+.bobs27-hit-buttons button.selected { border: 2px solid var(--color-primary); background: var(--color-primary-soft); }
+.bobs27-hit-buttons strong { font-family: Outfit, sans-serif; font-size: 2.25rem; line-height: 1; }
+.bobs27-hit-buttons small { color: var(--color-ink-muted); font-size: .68rem; }
+.bobs27-preview { min-height: 1.25rem; margin: .75rem 0; color: var(--color-primary); font-weight: 700; }
+.bobs27-confirm { width: 100%; min-height: 54px; }
+.bobs27-notes { margin-top: .75rem; padding: .75rem 1rem; border: 1px solid var(--color-line); border-radius: var(--radius-card); background: var(--color-surface); }
+.bobs27-notes summary { color: var(--color-ink-muted); font-size: .78rem; cursor: pointer; }
+.bobs27-notes .session-notes { margin-top: .75rem; }
+.bobs27-summary > p:not(.eyebrow) { margin: .5rem 0 0; color: var(--color-ink-muted); }
+.bobs27-end-actions { grid-template-columns: repeat(3, 1fr) !important; }
+.bobs27-history-row { grid-template-columns: 1fr 1fr 1fr; }
+
+@media (max-width: 760px) {
+  .bobs27-mode { grid-template-columns: 1fr; }
+  .bobs27-mode label { min-height: 76px; }
+  .bobs27-scoreboard article { min-height: 112px; padding: .5rem .25rem; }
+  .bobs27-scoreboard strong { font-size: clamp(3rem, 16vw, 4.5rem); }
+  .bobs27-hit-buttons button { min-height: 76px; }
+  .bobs27-end-actions { grid-template-columns: 1fr !important; }
+}
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
 
 /* Required fallbacks for the iOS 12 WebKit used by the iPad mini 2. */

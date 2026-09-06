@@ -3,6 +3,7 @@ import { db } from "./firebase";
 import type { CricketDart } from "./cricket";
 import type { JdcDart } from "./jdc";
 import type { Practice121Visit } from "./practice121";
+import type { Bobs27Mode, Bobs27Round } from "./bobs27";
 import type { DartSet, DartSetSnapshot, DartSetValues } from "./dartSets";
 
 export type PracticeDart = CricketDart | JdcDart;
@@ -10,24 +11,28 @@ export type PracticeDart = CricketDart | JdcDart;
 export interface StoredPracticeSession {
   id: string;
   routineId: string;
-  status: "completed";
+  status: "completed" | "eliminated" | "abandoned";
   startedAt: Timestamp;
   completedAt: Timestamp;
   darts: PracticeDart[];
   visits?: Practice121Visit[];
   startingLives?: number;
+  mode?: Bobs27Mode;
+  rounds?: Bobs27Round[];
   notes?: string;
   dartSetId?: string;
   dartSetSnapshot?: DartSetSnapshot;
 }
 
 export interface NewPracticeSession {
-  routineId: "cricket-mpd" | "jdc-challenge" | "practice-121";
-  status: "completed";
+  routineId: "cricket-mpd" | "jdc-challenge" | "practice-121" | "bobs-27";
+  status: "completed" | "eliminated" | "abandoned";
   startedAt: Date;
   darts: PracticeDart[];
   visits?: Practice121Visit[];
   startingLives?: number;
+  mode?: Bobs27Mode;
+  rounds?: Bobs27Round[];
   dartSetId?: string;
   dartSetSnapshot?: DartSetSnapshot;
   notes?: string;
