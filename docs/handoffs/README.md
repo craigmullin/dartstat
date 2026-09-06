@@ -7,6 +7,7 @@ Keep enhancement intent, agreed behavior, and acceptance criteria in this direct
 | [Cricket scorer](DartStat-Cricket-Handoff.md) | Two- or three-player local Cricket | Original design record; implementation files exist, acceptance review not performed during import |
 | [Original ’01 scorer](DartStat-01-Scorer-Handoff.md) | Original countdown scorer design | Implemented on develop; entry design superseded below |
 | [Calculator-style ’01 entry](DartStat-01-Calculator-Entry-Handoff.md) | Trusted turn totals, Next player, Bust, and Undo | Implemented locally; ready for acceptance review |
+| [121 practice game](DartStat-121-Practice-Game-Handoff.md) | Nine-dart escalating checkout routine with configurable lives | Added September 6, 2026; implementation pending |
 | [Maskable app icon](DartStat-Maskable-Icon-Fix.md) | Match SpikeStat's launcher icon packaging | Implemented on fix/maskable-app-icon; deployment and device verification pending |
 | [iPad mini 2 compatibility](DartStat-iPad-Mini-2-Compatibility-Handoff.md) | Reuse an iOS 12.5.8 iPad as a wall-mounted Cricket/’01 scorer | Added September 3, 2026; implementation and actual-device acceptance pending |
 
