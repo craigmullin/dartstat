@@ -2,6 +2,7 @@ import { addDoc, collection, deleteField, doc, getDocs, orderBy, query, serverTi
 import { db } from "./firebase";
 import type { CricketDart } from "./cricket";
 import type { JdcDart } from "./jdc";
+import type { Practice121Visit } from "./practice121";
 import type { DartSet, DartSetSnapshot, DartSetValues } from "./dartSets";
 
 export type PracticeDart = CricketDart | JdcDart;
@@ -13,16 +14,20 @@ export interface StoredPracticeSession {
   startedAt: Timestamp;
   completedAt: Timestamp;
   darts: PracticeDart[];
+  visits?: Practice121Visit[];
+  startingLives?: number;
   notes?: string;
   dartSetId?: string;
   dartSetSnapshot?: DartSetSnapshot;
 }
 
 export interface NewPracticeSession {
-  routineId: "cricket-mpd" | "jdc-challenge";
+  routineId: "cricket-mpd" | "jdc-challenge" | "practice-121";
   status: "completed";
   startedAt: Date;
   darts: PracticeDart[];
+  visits?: Practice121Visit[];
+  startingLives?: number;
   dartSetId?: string;
   dartSetSnapshot?: DartSetSnapshot;
   notes?: string;

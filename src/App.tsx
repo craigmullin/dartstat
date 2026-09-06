@@ -11,10 +11,12 @@ import { CompetitiveCricket } from "./CompetitiveCricketView";
 import { competitiveCricketStorageKey } from "./competitiveCricket";
 import { X01Scorer } from "./X01View";
 import { x01StorageKey } from "./x01";
+import { Practice121 } from "./Practice121View";
+import { practice121StorageKey, scorePractice121, type Practice121Game } from "./practice121";
 
 type Page = "practice" | "darts" | "history" | "stats" | "settings";
-type PracticeView = "home" | "setup" | "score" | "review" | "match" | "x01";
-type RoutineId = "cricket-mpd" | "jdc-challenge" | "cricket-match" | "x01-match";
+type PracticeView = "home" | "setup" | "score" | "review" | "match" | "x01" | "practice121";
+type RoutineId = "cricket-mpd" | "jdc-challenge" | "cricket-match" | "x01-match" | "practice-121";
 type NavigationState = { dartstat: true; page: Page; practiceView: PracticeView };
 
 export default function App() {
@@ -67,8 +69,9 @@ export default function App() {
       const requested = isNavigationState(event.state) ? event.state : initial;
       const hasMatch = current.userId ? hasStoredMatch(current.practiceView, current.userId) : false;
       const leavingFlow = current.practiceView !== "home" && (requested.page !== "practice" || requested.practiceView === "home");
-      const unfinished = leavingFlow && (current.darts.length > 0 || current.jdcDarts.length > 0 || ((current.practiceView === "match" || current.practiceView === "x01") && hasMatch));
-      if (!skipPopConfirmation.current && unfinished && !window.confirm(current.practiceView === "match" || current.practiceView === "x01" ? "Leave this game? It will remain saved on this device." : "Discard this unfinished practice session?")) {
+      const locallySaved = current.practiceView === "match" || current.practiceView === "x01" || current.practiceView === "practice121";
+      const unfinished = leavingFlow && (current.darts.length > 0 || current.jdcDarts.length > 0 || (locallySaved && hasMatch));
+      if (!skipPopConfirmation.current && unfinished && !window.confirm(locallySaved ? "Leave this game? It will remain saved on this device." : "Discard this unfinished practice session?")) {
         window.history.pushState({ dartstat: true, page: current.page, practiceView: current.practiceView } satisfies NavigationState, "");
         return;
       }
@@ -103,11 +106,12 @@ export default function App() {
     window.history.go(-depth);
   }
 
-  function beginPractice(nextRoutine: RoutineId) { setError(""); setRoutine(nextRoutine); setDarts([]); setJdcDarts([]); setSelectedDartSetId(""); setPracticeNotes(""); setStartedAt(null); pushScreen("practice", nextRoutine === "cricket-match" ? "match" : nextRoutine === "x01-match" ? "x01" : "setup"); }
+  function beginPractice(nextRoutine: RoutineId) { setError(""); setRoutine(nextRoutine); setDarts([]); setJdcDarts([]); setSelectedDartSetId(""); setPracticeNotes(""); setStartedAt(null); pushScreen("practice", nextRoutine === "cricket-match" ? "match" : nextRoutine === "x01-match" ? "x01" : nextRoutine === "practice-121" ? "practice121" : "setup"); }
   function startPractice() { setStartedAt(new Date()); pushScreen("practice", "score"); }
   function leavePractice(nextPage: Page = "practice") {
     const hasMatch = user ? hasStoredMatch(practiceView, user.uid) : false;
-    if (practiceView !== "home" && (darts.length || jdcDarts.length || ((practiceView === "match" || practiceView === "x01") && hasMatch)) && !window.confirm(practiceView === "match" || practiceView === "x01" ? "Leave this game? It will remain saved on this device." : "Discard this unfinished practice session?")) return;
+    const locallySaved = practiceView === "match" || practiceView === "x01" || practiceView === "practice121";
+    if (practiceView !== "home" && (darts.length || jdcDarts.length || (locallySaved && hasMatch)) && !window.confirm(locallySaved ? "Leave this game? It will remain saved on this device." : "Discard this unfinished practice session?")) return;
     const depth = practiceView === "review" ? 3 : practiceView === "score" ? 2 : 1;
     leaveFlow(nextPage, depth);
   }
@@ -128,6 +132,7 @@ export default function App() {
       {page === "practice" && practiceView === "review" && routine === "jdc-challenge" && <JdcReview user={user} darts={jdcDarts} dartSet={dartSets.find((item) => item.id === selectedDartSetId)} notes={practiceNotes} setNotes={setPracticeNotes} startedAt={startedAt!} onBack={() => window.history.back()} onSaved={async () => { await refreshSessions(user.uid); leaveFlow("practice", 3); }} setError={setError} />}
       {page === "practice" && practiceView === "match" && <CompetitiveCricket userId={user.uid} profileName={user.displayName} onExit={() => leavePractice()} />}
       {page === "practice" && practiceView === "x01" && <X01Scorer userId={user.uid} profileName={user.displayName} onExit={() => leavePractice()} />}
+      {page === "practice" && practiceView === "practice121" && <Practice121 userId={user.uid} onExit={() => leavePractice()} onSaved={async () => { await refreshSessions(user.uid); leaveFlow("practice", 1); }} />}
       {page === "darts" && <DartSetsPage dartSets={dartSets} onSave={async (values, dartSetId) => { if (dartSetId) await updateDartSet(user.uid, dartSetId, values); else await addDartSet(user.uid, values); await refreshDartSets(user.uid); }} onArchive={async (dartSet) => { await archiveDartSet(user.uid, dartSet.id); await refreshDartSets(user.uid); }} />}
       {page === "history" && <History sessions={sessions} dartSets={dartSets} loading={sessionsLoading} onUpdateDartSet={async (session, dartSet) => { await updateSessionDartSet(user.uid, session.id, dartSet); await refreshSessions(user.uid); }} />}
       {page === "stats" && <Stats sessions={sessions} />}
@@ -159,12 +164,13 @@ function PracticeSetup({ routine, dartSets, selectedDartSetId, setSelectedDartSe
 function PracticeHome({ user, sessions, loading, onStart, onHistory }: { user: User; sessions: StoredPracticeSession[]; loading: boolean; onStart: (routine: RoutineId) => void; onHistory: () => void }) {
   const cricketResults = sessions.filter((session) => session.routineId === "cricket-mpd").map((session) => marksPerRound(asCricketDarts(session)));
   const jdcResults = sessions.filter((session) => session.routineId === "jdc-challenge").map((session) => jdcTotalScore(asJdcDarts(session)));
+  const practice121Results = sessions.filter((session) => session.routineId === "practice-121").map(asPractice121Score);
   const routines = [
     { name: "Play ’01", id: "x01-match" as const, meta: "2–3 players · 301 / 501 / 701", description: "Countdown with configurable in and out rules", best: "Scoreboard" },
     { name: "Play Cricket", id: "cricket-match" as const, meta: "2–3 players · Local game", description: "Keep score together on one device", best: "Scoreboard" },
     { name: "Cricket Practice", id: "cricket-mpd" as const, meta: "21 darts · 7 targets", description: "Accuracy across the Cricket board", best: cricketResults.length ? `${formatMpr(Math.max(...cricketResults))} MPR` : "—" },
     { name: "JDC Challenge", id: "jdc-challenge" as const, meta: "57 darts · 3 sections", description: "Shanghai scoring and doubles accuracy", best: jdcResults.length ? String(Math.max(...jdcResults)) : "—" },
-    { name: "Around the Clock" }, { name: "Doubles" }, { name: "Checkout Practice" }, { name: "Scoring Practice" },
+    { name: "121", id: "practice-121" as const, meta: "9 darts per target · Double out", description: "Escalating checkout practice with lives", best: practice121Results.length ? String(Math.max(...practice121Results.map((result) => result.highestCheckoutCompleted ?? 0)) || "—") : "—" },
   ];
   const weekStart = Date.now() - 7 * 86400000;
   const thisWeek = sessions.filter((session) => session.completedAt?.toMillis() >= weekStart).length;
@@ -228,9 +234,11 @@ function History({ sessions, dartSets, loading, onUpdateDartSet }: { sessions: S
   const [selected, setSelected] = useState<StoredPracticeSession | null>(null);
   if (selected) {
     const isJdc = selected.routineId === "jdc-challenge";
+    const is121 = selected.routineId === "practice-121";
     const cricket = asCricketDarts(selected);
     const jdc = asJdcDarts(selected);
-    return <section><button className="text-button back-button" onClick={() => setSelected(null)}>← All sessions</button><header className="review-heading compact"><div><p className="eyebrow">{isJdc ? "JDC Challenge" : "Cricket MPR"}</p><h1>{formatDate(selected.completedAt)}</h1><HistoryDartSetEditor session={selected} dartSets={dartSets} onSave={async (dartSet) => { await onUpdateDartSet(selected, dartSet); setSelected({ ...selected, dartSetId: dartSet?.id, dartSetSnapshot: dartSet ? snapshotDartSet(dartSet) : undefined }); }} /></div><div className="result-summary"><span>{isJdc ? "Total score" : "MPR"}</span><strong>{isJdc ? jdcTotalScore(jdc) : formatMpr(marksPerRound(cricket))}</strong><small>{isJdc ? "57 darts" : `${totalMarks(cricket)} total marks`}</small></div></header>{selected.notes && <section className="saved-notes"><p className="eyebrow">Practice notes</p><p>{selected.notes}</p></section>}{isJdc ? <JdcTable darts={jdc} /> : <VisitTable darts={cricket} />}</section>;
+    const practice121 = asPractice121Score(selected);
+    return <section><button className="text-button back-button" onClick={() => setSelected(null)}>← All sessions</button><header className="review-heading compact"><div><p className="eyebrow">{is121 ? "121" : isJdc ? "JDC Challenge" : "Cricket MPR"}</p><h1>{formatDate(selected.completedAt)}</h1>{!is121 && <HistoryDartSetEditor session={selected} dartSets={dartSets} onSave={async (dartSet) => { await onUpdateDartSet(selected, dartSet); setSelected({ ...selected, dartSetId: dartSet?.id, dartSetSnapshot: dartSet ? snapshotDartSet(dartSet) : undefined }); }} />}</div><div className="result-summary"><span>{is121 ? "Highest checkout" : isJdc ? "Total score" : "MPR"}</span><strong>{is121 ? practice121.highestCheckoutCompleted ?? "—" : isJdc ? jdcTotalScore(jdc) : formatMpr(marksPerRound(cricket))}</strong><small>{is121 ? `${practice121.targetsCompleted} completed · ${practice121.totalDartsThrown} darts` : isJdc ? "57 darts" : `${totalMarks(cricket)} total marks`}</small></div></header>{selected.notes && <section className="saved-notes"><p className="eyebrow">Practice notes</p><p>{selected.notes}</p></section>}{is121 ? <Practice121History session={selected} /> : isJdc ? <JdcTable darts={jdc} /> : <VisitTable darts={cricket} />}</section>;
   }
   return <section><header className="page-heading"><div><p className="eyebrow">Sessions</p><h1>History</h1><p>Every completed practice session, newest first.</p></div></header><SessionList sessions={sessions} loading={loading} onSelect={setSelected} /></section>;
 }
@@ -238,7 +246,12 @@ function History({ sessions, dartSets, loading, onUpdateDartSet }: { sessions: S
 function SessionList({ sessions, loading, onSelect }: { sessions: StoredPracticeSession[]; loading: boolean; onSelect?: (session: StoredPracticeSession) => void }) {
   if (loading) return <div className="empty-state"><strong>Loading sessions…</strong></div>;
   if (!sessions.length) return <div className="empty-state"><strong>No sessions yet</strong><p>Complete Cricket Practice and the first result will appear here.</p></div>;
-  return <div className="session-list">{sessions.map((session) => { const isJdc = session.routineId === "jdc-challenge"; return <button key={session.id} onClick={() => onSelect?.(session)} disabled={!onSelect} className="session-card"><span><strong>{isJdc ? "JDC Challenge" : "Cricket MPR"}</strong><small>{formatDate(session.completedAt)}{session.dartSetSnapshot ? ` · ${session.dartSetSnapshot.name}` : ""}</small></span><span><strong>{isJdc ? jdcTotalScore(asJdcDarts(session)) : formatMpr(marksPerRound(asCricketDarts(session)))}</strong><small>{isJdc ? "Score" : "MPR"}</small></span><b aria-hidden="true">{onSelect ? "→" : ""}</b></button>; })}</div>;
+  return <div className="session-list">{sessions.map((session) => { const isJdc = session.routineId === "jdc-challenge"; const is121 = session.routineId === "practice-121"; const practice121 = asPractice121Score(session); return <button key={session.id} onClick={() => onSelect?.(session)} disabled={!onSelect} className="session-card"><span><strong>{is121 ? "121" : isJdc ? "JDC Challenge" : "Cricket MPR"}</strong><small>{formatDate(session.completedAt)}{session.dartSetSnapshot ? ` · ${session.dartSetSnapshot.name}` : ""}</small></span><span><strong>{is121 ? practice121.highestCheckoutCompleted ?? "—" : isJdc ? jdcTotalScore(asJdcDarts(session)) : formatMpr(marksPerRound(asCricketDarts(session)))}</strong><small>{is121 ? "Highest checkout" : isJdc ? "Score" : "MPR"}</small></span><b aria-hidden="true">{onSelect ? "→" : ""}</b></button>; })}</div>;
+}
+
+function Practice121History({ session }: { session: StoredPracticeSession }) {
+  const visits = session.visits || [];
+  return <div className="visit-table"><div className="visit-row practice121-history-row visit-head"><span>Target</span><span>Visit</span><span>Result</span></div>{visits.map((visit, index) => <div className="visit-row practice121-history-row" key={index}><strong>{visit.target}</strong><span>{visit.visit} · {visit.dartsUsed} dart{visit.dartsUsed > 1 ? "s" : ""}</span><strong>{visit.outcome === "checkout" ? "Checkout" : visit.outcome === "bust" ? "Bust" : visit.submittedScore}</strong></div>)}</div>;
 }
 
 function HistoryDartSetEditor({ session, dartSets, onSave }: { session: StoredPracticeSession; dartSets: DartSet[]; onSave: (dartSet?: DartSet) => Promise<void> }) {
@@ -298,12 +311,14 @@ function markShort(marks: number) { return ["M", "S", "D", "T"][marks]; }
 function jdcResultShort(dart: JdcDart) { return { miss: "M", single: "S", double: dart.section === "doubles" ? `D${dart.target}` : "D", treble: "T", triple: "T", "double-bull": "DB" }[dart.result]; }
 function asCricketDarts(session: StoredPracticeSession) { return (session.darts || []).filter((dart): dart is CricketDart => "marks" in dart); }
 function asJdcDarts(session: StoredPracticeSession) { return (session.darts || []).filter((dart): dart is JdcDart => "result" in dart); }
+function asPractice121Score(session: StoredPracticeSession) { return scorePractice121({ version: 1, startingLives: session.startingLives || 3, startedAt: new Date(0).toISOString(), visits: session.visits || [] } satisfies Practice121Game); }
 function formatDate(timestamp: StoredPracticeSession["completedAt"]) { return timestamp?.toDate ? timestamp.toDate().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "Just now"; }
 function isNavigationState(value: unknown): value is NavigationState { return Boolean(value && typeof value === "object" && "dartstat" in value && "page" in value && "practiceView" in value); }
 function hasStoredMatch(view: PracticeView, userId: string) {
   try {
     if (view === "match") return Boolean(localStorage.getItem(competitiveCricketStorageKey(userId)));
     if (view === "x01") return Boolean(localStorage.getItem(x01StorageKey(userId)));
+    if (view === "practice121") return Boolean(localStorage.getItem(practice121StorageKey(userId)));
     return false;
   } catch { return false; }
 }
