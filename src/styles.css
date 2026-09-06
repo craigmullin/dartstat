@@ -172,3 +172,9 @@ h2 { font-size: 1.4rem; }
   .x01-calculator-actions .button { min-height: 60px; font-size: 1rem; }
   .x01-undo-turn { min-height: 48px; font-size: 1rem; }
 }
+
+/* Keep the existing landscape score-card footprint while making remainders easier to read across the room. */
+@media (orientation: landscape) and (min-width: 901px) and (max-width: 1100px) and (max-height: 900px) {
+  .x01-players article { padding: .25rem .75rem; }
+  .x01-players strong { font-size: 5rem; }
+}
