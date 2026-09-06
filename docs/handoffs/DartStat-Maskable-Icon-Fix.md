@@ -38,3 +38,8 @@ the centered maskable safe circle. This is not a pixel-identical transformation.
 - Device verification remains pending; a missing maskable icon is a supported
   explanation, not a confirmed diagnosis of the particular launcher's behavior.
 - Deployment requires explicit authorization under root `AGENTS.md`.
+- Revised September 6, 2026 after device verification showed that the original
+  maskable asset's conservative padding still made the D appear too small. The
+  replacement `icon-maskable-512-v2.png` enlarges the original mark while
+  retaining an opaque edge-to-edge background. The manifest uses the versioned
+  filename so mobile launchers do not reuse the original cached asset.
